@@ -1,1 +1,13 @@
-"# DispatchingForPeople" 
+# DispatchingForPeople
+
+总：我们定义Chromosome类来表示染色体,并定义了calculate_fitness.mutate.crossover和selection函数来分别计算适应度，变异
+
+优化点：
+
+0. 地图节点的数据
+1. 完成多次调度的编码、解码
+2. 完善适应度函数，更好地计算个体的适应度    
+3. 添加遗传算法算子：不同的交叉策略、变异、置换...
+4. 新的停止条件：收敛条件、运行时间限制
+5. 优化参数：交叉概率、变异概率、种群大小
+6. 算法结合：模拟退火算法...
