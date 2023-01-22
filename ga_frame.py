@@ -11,14 +11,14 @@ import random
 输出最优解，表示物资调度的最优方案。
 '''
 
-#define object function
+# define object function
 def object_function(chromosome):
     return sum(chromosome)
 
-#define initial population
+# define initial population
 pop = np.random.randint(2, size=(100, 10))
 
-#define genetic operator
+# define genetic operator
 def crossover(chromosome1, chromosome2):
     crossover_point = random.randint(1, len(chromosome1) - 1)
     return chromosome1[:crossover_point] + chromosome2[crossover_point:]

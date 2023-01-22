@@ -1,12 +1,19 @@
 import random
 import numpy as np
 import math
-from config import map_nodes
+# from map import map_nodes
+from map import map_nodes,random_node_list
+# import map.random_node_list as map_nodes
+from selection import selection,selection_roulette,selection_championships
 # print(dir(config))
-
+map_nodes = random_node_list
 """
-总：我们定义Chromosome类来表示染色体,并定义了calculate_fitness.mutate.crossover和selection函数来分别计算适应度，变异
-优化点：
+总：我们定义Chromosome类来表示染色体,并定义了函数
+    calculate_fitness：计算适应度
+    mutate：表示变异
+    crossover：表示交叉
+    selection 表示选择新一代个体 ==> 当成模块
+待优化点：
     0. 地图节点的数据
     1. 完成多次调度的编码、解码
     2. 完善适应度函数，更好地计算个体的适应度    
@@ -15,23 +22,41 @@ from config import map_nodes
     5. 优化参数：交叉概率、变异概率、种群大小
     6. 算法结合：模拟退火算法...
 """
-chromosome_number = 10 # 染色体（方案）数量
-crossover_rate = 0.8 # 交叉概率
-mutation_rate = 0.3 # 变异概率
-n_iterations = 1000 # 设置最大迭代次数
+
+CHROMOSOME_NUMBER = 10  # 染色体（方案）数量
+CROSSOVER_RATE = 0.8  # 交叉概率
+MUTATION_RATE = 0.3  # 变异概率
+N_ITERATIONS = 1000  # 设置最大迭代次数(如果方案数量筛选没了就提前结束了)
+now_time = 0 # 当前时间
+ANXIETY_RATE = 1.1  # 焦虑幂指速率
+
 
 distance_matrix = [0] * len(map_nodes) # 图的邻接矩阵（各节点的路径代价）
 for i in range(len(distance_matrix)):
     distance_matrix[i] = [0] * len(map_nodes)
 
+anxiety_arr = [0] * len(map_nodes) # 各地点的人群累计焦虑值
 
 
+# 定义某地人群的焦虑函数
+def people_anxiety(magnitude,population,last_time):
+    """
+    :param magnitude: 震级
+    :param population: 人口
+    :param last_time: 距离上次得到救援的时间
+    :return: 返回时刻的人群焦虑度
+    """
+    return math.exp(magnitude * population * last_time)
 
 
 class Node:
-    def __init__(self,x,y):
+    def __init__(self,x,y,name=None,population=1,anxiety = 0):
         self.x = x
         self.y = y
+        self.name = name
+        self.population = population
+        self.anxiety = anxiety # 总焦虑度
+        self.last_time_visit = 0
 
     def calculate_distance(self,other_node):
         return math.sqrt(pow(self.x - other_node.x,2) + pow(self.y - other_node.y,2))
@@ -75,9 +100,9 @@ def init_map():
 
 
 # 定义 计算适应度函数
-def calculate_fitness(population):
+def calculate_fitness(chromosomes):
     print("计算适应度")
-    for chromosome in population:
+    for chromosome in chromosomes:
         chromosome.calculate_fitness()
         print(f"{str(chromosome)} fitness: {str(chromosome.fitness)}")
 
@@ -99,49 +124,6 @@ def crossover(chromosome1, chromosome2):
 
     return new_chromosome1, new_chromosome2
 
-
-# 选择 - 定义选择新一代个体的函数
-def selection(population):
-    # 按照适应度值从小到大排序
-    population.sort(key=lambda x: x.fitness)
-    # 选择适应度值最优的前50%个体作为新一代种群
-    return population[:int(len(population) /2)]
-
-
-# 选择 - 轮盘赌算法
-def selection_roulette(population):
-    """
-    这个函数首先计算种群中每个染色体的适应度总和，然后计算每个染色体的适应度概率。接着计算累积概率。
-    对于新一代种群中的每个个体，生成一个随机数并在累积概率表中找到第一个大于该随机数的染色体并将其加入新一代种群中。
-    """
-    # 计算适应度总和
-    fitness_sum = sum(chromosome.fitness for chromosome in population)
-    # 计算概率
-    probabilities = [chromosome.fitness / fitness_sum for chromosome in population]
-    # 计算累积概率
-    cumulative_probabilities = [probabilities[0]]
-    for i in range(1, len(probabilities)):
-        cumulative_probabilities.append(cumulative_probabilities[i-1] + probabilities[i])
-    # 生成新一代种群
-    new_population = []
-    for i in range(len(population)):
-        r = random.random()
-        for j in range(len(cumulative_probabilities)):
-            if r < cumulative_probabilities[j]:
-                new_population.append(population[j])
-                break
-    return new_population
-
-# 选择 - 锦标赛算法
-def selection_championships(population, tournament_size):
-    new_population = []
-    for i in range(len(population)):
-        # 随机选择参赛个体
-        competitors = random.sample(population, tournament_size)
-        # 选择适应度最高的个体
-        competitors.sort(key=lambda x: x.fitness, reverse=True)
-        new_population.append(competitors[0])
-    return new_population
 
 
 # 种群初始化
@@ -165,22 +147,22 @@ def crossover_and_mutate(population):
             break
 
         # 随机决定是否进行交叉
-        if random.random() < crossover_rate:
+        if random.random() < CROSSOVER_RATE:
             # 进行交叉
             offspring1, offspring2 = crossover(population[i], population[i+1])
         else:
             offspring1, offspring2 = population[i], population[i+1]
         # 随机决定是否进行变异
-        if random.random() < mutation_rate:
+        if random.random() < MUTATION_RATE:
             mutate(offspring1)
-        if random.random() < mutation_rate:
+        if random.random() < MUTATION_RATE:
             mutate(offspring2)
         new_population.append(offspring1)
         new_population.append(offspring2)
     return new_population
 
 
-# 展示当前的染色体（方案）: 路径 + 适应度
+# 展示当前的种群染色体（方案）: 路径 + 适应度
 def show_population(population):
     for i in range(len(population)):
         chromosome = population[i]
@@ -192,17 +174,19 @@ def main():
     # 初始化地图数据，邻接矩阵 distance_matrix
     init_map()
     # 初始化种群
-    population = init_population(chromosome_number,len(map_nodes))
+    population = init_population(CHROMOSOME_NUMBER, len(map_nodes))
     # 计算初始种群的适应度值
     calculate_fitness(population)
     # 进行遗传算法迭代
     print("开始遗传算法迭代")
-    for i in range(n_iterations):
+    for i in range(N_ITERATIONS):
+
         # 选择新一代个体
-        print("选择新一代个体")
         new_population = selection(population)
         if len(new_population) == 0: # 如果筛到最后没了，提前终止
             break;
+        print("----------------------------------------")
+        print("选择新一代个体")
         show_population(new_population)
 
         # 进行交叉和变异
@@ -210,7 +194,6 @@ def main():
 
         # 重新计算 更新后种群的适应度
         calculate_fitness(new_population)
-
         print("进行交叉变异后")
         show_population(new_population)
 
@@ -221,7 +204,6 @@ def main():
         best = min(population, key=lambda x: x.fitness)
         print(f'best path: {best}')
         print(f'best fitness: {best.fitness}')
-
 
 if __name__ == '__main__':
     main()
