@@ -27,8 +27,8 @@ CHROMOSOME_NUMBER = 10  # 染色体（方案）数量
 CROSSOVER_RATE = 0.8  # 交叉概率
 MUTATION_RATE = 0.3  # 变异概率
 N_ITERATIONS = 1000  # 设置最大迭代次数(如果方案数量筛选没了就提前结束了)
-now_time = 0 # 当前时间
 ANXIETY_RATE = 1.1  # 焦虑幂指速率
+now_time = 0 # 当前时间
 
 
 distance_matrix = [0] * len(map_nodes) # 图的邻接矩阵（各节点的路径代价）
