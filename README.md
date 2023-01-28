@@ -1,8 +1,15 @@
 # DispatchingForPeople
 
-总：我们定义Chromosome类来表示染色体,并定义了calculate_fitness.mutate.crossover和selection函数来分别计算适应度，变异
+## 目录结构
 
-优化点：
+- data：存放csv地图节点的数据集
+- src：存放源代码
+
+
+## 总说明
+  我们定义Chromosome类来表示染色体,并定义了calculate_fitness.mutate.crossover和selection函数来分别计算适应度，变异
+
+## 优化点
 
 0. 地图节点的数据
 1. 完成多次调度的编码、解码
