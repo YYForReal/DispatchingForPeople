@@ -1,6 +1,62 @@
 import random
 import matplotlib.pyplot as plt
 
+import math
+
+# 定义地图节点
+class Node:
+    def __init__(self,x,y,name=None):
+        self.x = x # 纬度
+        self.y = y # 经度
+        self.name = name # 地名
+        self.is_supple = False # 是否是补给点
+
+    def calculate_distance(self,other_node):
+        """
+        计算与其他节点的距离
+        :param other_node:  其他节点
+        :return: 返回与其他节点的距离
+        """
+        return math.sqrt(pow(self.x - other_node.x,2) + pow(self.y - other_node.y,2))
+
+    def __str__(self):
+        return "(" + str(self.x) + "," + str(self.y) + ")"
+
+# 定义受灾点
+class AffectedNode(Node):
+    def __init__(self,x, y, name=None,population = 0,magnitude = 0):
+        Node.__init__(self,x,y,name)
+        self.population = population # 人口
+        self.magnitude = magnitude # 震级
+        self.anxiety = 0 # 总焦虑度
+        self.last_time_visit = 0 # 距离上次访问的时间
+        # 推测 物资需求
+        self.need = population * 1
+
+    # 定义该地人群的焦虑函数
+    def cal_people_anxiety():
+        """
+        :param magnitude: 震级
+        :param population: 人口
+        :param last_time: 距离上次得到救援的时间
+        :return: 返回时刻的人群焦虑度 : TODO 暂时不使用 math.exp()
+        """
+        return self.magnitude * self.population * self.last_time_visit
+
+    def __str__(self):
+        return "受灾点" + Node.__str__(self)
+
+# 定义补给点
+class SuppleNode(Node):
+    def __init__(self,x, y, name=None,material = 150):
+        Node.__init__(self,x,y,name)
+        self.is_supple = True
+        self.material = material
+
+    def __str__(self):
+        return "补给点" + Node.__str__(self)
+
+
 # 地图节点的数据
 """
      地名     纬度         经度           震级      半径
@@ -66,7 +122,7 @@ supply_node = [
 
 random_node_list = []
 random_node_supple_list = []
-# 随机生成的节点数据
+# 随机生成的节点数据 26个
 for i in range(ord('a'), ord('z') + 1):
     name = chr(i)
     x = round(random.uniform(0, 90),3)

@@ -28,7 +28,10 @@ for i in range(len(map_nodes)):
     3. 添加遗传算法算子：不同的交叉策略、变异、置换...
     4. 新的停止条件：收敛条件、运行时间限制
     5. 优化参数：交叉概率、变异概率、种群大小
-    6. 算法结合：模拟退火算法...
+    6. 算法结合：模拟退火算法...    
+    
+    7. 当前的物资度量是统一的，以后可以改成列表形式的数据    
+    
 """
 
 CHROMOSOME_NUMBER = 10  # 染色体（方案）数量
@@ -38,10 +41,11 @@ MAX_TIME = 1000  # 设置最大迭代次数(如果方案数量筛选到只剩一
 ANXIETY_RATE = 1.1  # 焦虑幂指速率
 now_time = 0 # 当前时间
 
-
 distance_matrix = [0] * len(map_nodes) # 图的邻接矩阵（各节点的路径代价）
 for i in range(len(distance_matrix)):
     distance_matrix[i] = [0] * len(map_nodes)
+
+# TODO: 设置一个距离受灾点最近的补给点映射
 
 anxiety_arr = [0] * len(map_nodes) # 各地点的人群累计焦虑值
 
@@ -50,8 +54,9 @@ anxiety_arr = [0] * len(map_nodes) # 各地点的人群累计焦虑值
 # 定义染色体结构
 class Chromosome:
     def __init__(self, path):
-        self.path = path
+        self.path = path # 路径： abc1 ef2 ght3
         self.fitness = None
+        print(f"Chromosome: {self.path}")
 
     # 版本1：计算适应度
     def calculate_fitness(self):
@@ -73,22 +78,36 @@ class Chromosome:
     # 版本3：计算适应度
     def evaluate_fitness(self):
         robots = []
-        start = self.path[0]
-        destination = self.path[1]
+        start = None
+        destination = None
+        tasks = list()
+        # 构造机器人及其任务
+        for i in range(len(self.path)):
+            # if self.path[i].isalpha():
+            if type(self.path[i]) != int:
+                # 如果是字母的话就是机器人
+                # distance = distances[start][destination]
+                robot = Robot(tasks,speed=1,max_carry=150)
+                # robot = Robot(start, destination, distance, speed)
+                robots.append(robot)
+                tasks = list()
+            else:
+                # 如果是数字就是一个地点
+                tasks.append(self.path[i])
 
-        for i in range(1, len(self.path)):
-            distance = distances[start][destination]
-            robot = Robot(start, destination, distance, speed)
-            robots.append(robot)
-
+        total_time = 0
         while True:
-            for robot in robots:
-                robot.move()
-                if robot.destination == "D":
-                    robots.remove(robot)
             if not robots:
                 break
-        total_time = sum(robot.elapsed_time for robot in robots)
+            for robot in robots:
+                robot.move()
+                print("robot move")
+                if robot.task_index >= len(robot.tasks):
+                    robots.remove(robot)
+            total_time+=1
+
+        # total_time = sum(robot.elapsed_time for robot in robots)
+        self.fitness = total_time
         return total_time
 
     def __str__(self):
@@ -96,47 +115,64 @@ class Chromosome:
 
 # 定义运输机器
 class Robot:
-    def __init__(self, start, destination, distance, speed=1,carry=0):
+    def __init__(self, tasks, speed=1,max_carry=100,position = 0):
         """
-        :param start: 起始点
-        :param destination: 目的地
-        :param distance: 当前路程
+        :param tasks: 目的地任务序列
         :param speed: 速度
-        :param carry: 携带物资量
+        :param max_carry: 携带物资量
+        :param position: 当前的机器人所在位置
         """
-        self.start = start
-        self.destination = destination
-        self.distance = distance
-        self.speed = speed
-        self.elapsed_time = 0
-        self.carry = carry
-        self.task = None # 对应染色体的路径下标
+        self.tasks = tasks # 总共的任务队列
+        self.max_carry = max_carry  # 最大携带容量
+        self.speed = speed # 运输机器的速度
+        self.position = position # 当前位处的节点下标（初始位置）
+
+        # self.start = tasks[0]
+        self.destination = tasks[0]
+        self.distance = 0 # 这段路行驶路程
+        self.elapsed_distance = 0 # 已走总路程
+        self.carry = 0 # 当前携带容量
+        self.task_index = 1 # 对应染色体的任务下标
 
     def move(self):
         """
         模拟机器人移动
         :return:
         """
-        self.elapsed_time += self.speed
-        if self.elapsed_time >= self.distance:
+        self.distance += self.speed
+        self.elapsed_distance += self.speed
+        if self.distance >= distance_matrix[self.position][self.destination]:
             self.arrive()
 
     def arrive(self):
         """
-        模拟机器人抵达目的地
+        模拟机器人抵达目的地：重置行驶的这段路程，清算物资，判定是否需要行驶到补给点
         :return:
         """
         # 机器人抵达目的地后的重新调度
+        self.distance = 0
         index = self.destination
-        node = map_nodes[index]
-        if node.is_supple == True:
-            # 如果到达的是补给点：TODO
+        arrive_node = map_nodes[index]
+        if arrive_node.is_supple:
+            # 如果到达的是补给点
+            # TODO： 补给
+
             pass
         else:
-            # 如果到达的是受灾点：TODO
-            pass
+            # 如果到达的是受灾点：
+            if arrive_node.need > self.carry:
+                # 如果 受灾点的需求 比 运输物资 大
+                # TODO： 是否可以按百分比决策
+                arrive_node.need -= self.carry
+                self.carry = 0
+                # TODO： （暂时）先返回补给点，清空受灾点所有需求后再进行下一个受灾点的补给
 
-
+                pass
+            else:
+                # 物资充足
+                self.carry -= arrive_node.need
+                arrive_node.need = 0
+                task_index +=1
 
 
 # 初始化 地图 邻接矩阵
@@ -162,7 +198,8 @@ def init_map():
 def calculate_fitness(chromosomes):
     print("计算适应度")
     for chromosome in chromosomes:
-        chromosome.calculate_fitness()
+        # chromosome.calculate_fitness()
+        chromosome.evaluate_fitness()
         print(f"{str(chromosome)} fitness: {str(chromosome.fitness)}")
 
 
@@ -182,13 +219,14 @@ def crossover(chromosome1, chromosome2):
     new_chromosome2 = Chromosome(chromosome2.path[:cross_point] + chromosome1.path[cross_point:])
     return new_chromosome1, new_chromosome2
 
-# 种群初始化
+# 种群初始化 (数字是地点、字母是机器人)
 def init_population(n_chromosomes, n_cities):
     population = []
     for i in range(n_chromosomes):
         path = list(range(n_cities))
         random.shuffle(path)
         print("路径生成："+str(path))
+        path.extend("a")
         population.append(Chromosome(path))
     return population
 

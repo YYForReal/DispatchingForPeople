@@ -1,6 +1,7 @@
 import numpy as np
 import random
 '''
+----不可运行----
 使用 Python 编写遗传算法 (GA) 进行物资调度的程序框架可以分为以下步骤:
 导入所需的库，如 NumPy 和 random。
 定义目标函数，表示物资调度的目标，如最小化运输费用。
