@@ -122,6 +122,7 @@ supply_node = [
 
 random_node_list = []
 random_node_supple_list = []
+any_supple = False
 # 随机生成的节点数据 26个
 for i in range(ord('a'), ord('z') + 1):
     name = chr(i)
@@ -130,6 +131,11 @@ for i in range(ord('a'), ord('z') + 1):
     magnitude = round(random.uniform(1, 8),2)
     population = round(random.uniform(1, 100),2)
     is_supple = True if random.random() < 0.2 else False
+
+    # 如果到了最后一个还没有补给点，我们确保必定有一个补给点
+    if name == "z" and any_supple == False:
+        is_supple = True
+
     new_node = {
         "name": name,
         "x": x,
@@ -139,6 +145,7 @@ for i in range(ord('a'), ord('z') + 1):
         "is_supple": is_supple,
     }
     if (is_supple):
+        any_supple = True
         random_node_supple_list.append(new_node)
     else:
         random_node_list.append(new_node)
