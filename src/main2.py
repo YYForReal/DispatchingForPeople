@@ -40,7 +40,7 @@ print(map_nodes[0].need)
     crossover：表示交叉
     selection 表示选择新一代个体 ==> 当成模块
 待优化点：
-    0. 地图节点的数据
+    0. 地图节点的数据 随机
     1. 完成多次调度的编码、解码
     2. 完善适应度函数，更好地计算个体的适应度    
     3. 添加遗传算法算子：不同的交叉策略、变异、置换...
@@ -49,6 +49,8 @@ print(map_nodes[0].need)
     6. 算法结合：模拟退火算法...    
     
     7. 当前的物资度量是统一的，以后可以改成列表形式的数据    
+    8. 可视化
+    
     
 整体设想：
     已知：初始的机器人的数量及出发点（必定是补给点）
@@ -100,6 +102,8 @@ class Chromosome:
 
     # 版本3：计算适应度
     def evaluate_fitness(self):
+
+
         robots = []
         start = None
         destination = None
@@ -140,8 +144,8 @@ class Robot:
     def __init__(self, tasks, speed=1,max_carry=100,start = affected_number ):
         """
         :param tasks: 目的地任务序列
-        :param speed: 速度
-        :param max_carry: 携带物资量
+        :param speed: 速度: 约 1.2 m/s
+        :param max_carry: 最大携带物资量: 约 150kg
         :param start: 当前的机器人的出发点（也是初始的位置）
         """
         self.tasks = tasks # 总共的任务队列
@@ -154,6 +158,8 @@ class Robot:
         self.elapsed_distance = 0 # 已走总路程
         self.carry = max_carry # 当前携带容量,由于初始位于补给点，所以默认是满的
         self.task_index = 0 # 对应染色体的任务下标
+        self.x = map_nodes[start].x
+        self.y = map_nodes[start].y
 
     def move(self):
         """
@@ -166,9 +172,19 @@ class Robot:
 
         self.distance += self.speed
         self.elapsed_distance += self.speed
+
+
         # print(f"robot move from {self.start} to {self.destination}")
         if self.distance >= distance_matrix[self.start][self.destination]:
             self.arrive()
+        else:
+            percentage = self.distance/ distance_matrix[self.start][self.destination]
+            target_x = map_nodes[self.destination].x
+            target_y = map_nodes[self.destination].y
+            self.x = map_nodes[self.start].x + percentage * (target_x - map_nodes[self.start].x)
+            self.y = map_nodes[self.start].y + percentage * (target_y - map_nodes[self.start].y)
+
+
 
     def arrive(self):
         """
@@ -179,10 +195,12 @@ class Robot:
         """
             补给点：  
         """
-        print(f"Robot arrive from {self.start} to {self.destination}")
+        print(f"Robot arrive from {map_nodes[self.start].name} to {map_nodes[self.destination].name}")
         self.distance = 0 # 重置 下一段路已经行驶的路程
         old_start  = self.start
         self.start = self.destination # 更新 下一段路的起始点
+        self.x = map_nodes[self.start].x
+        self.y = map_nodes[self.start].y
         index = self.destination #
         arrive_node = map_nodes[index]
         if arrive_node.is_supple:
@@ -215,6 +233,8 @@ class Robot:
                     print("finish its tasks")
                 else:
                     self.destination = self.tasks[self.task_index]
+
+        print(f"Robot go to  {map_nodes[self.destination].name} \n")
 
 
 # 初始化 地图
@@ -270,7 +290,9 @@ def calculate_fitness(chromosomes):
 def mutate(chromosome):
     # 随机选择两个位置并交换其中的值
     i, j = random.sample(range(len(chromosome.path)), 2)
-    chromosome.path[i], chromosome.path[j] = chromosome.path[j], chromosome.path[i]
+    # 不交换机器人的位置,确保交换的是地点
+    if type(chromosome.path[i]) == int and type(chromosome.path[j]) == int:
+        chromosome.path[i], chromosome.path[j] = chromosome.path[j], chromosome.path[i]
 
 
 # 定义交叉函数
@@ -332,6 +354,12 @@ def show_population(population):
         chromosome = population[i]
         print(f"{str(chromosome)} : {str(chromosome.fitness)}")
 
+# 重置所有受灾点需求
+def resetAllNeed():
+    for i in range(len(random_node_list)):
+        map_nodes[i].reset_need()
+
+
 # 定义主函数
 def main():
     # 初始化地图数据，邻接矩阵 distance_matrix
@@ -340,6 +368,8 @@ def main():
     population = init_population(CHROMOSOME_NUMBER, affected_number)
     # 计算初始种群的适应度值
     calculate_fitness(population)
+    # 留下一个适应度最好的
+    best_chromosome = population[0]
     # 进行遗传算法迭代
     print("开始遗传算法迭代")
     for i in range(MAX_TIME):
@@ -348,6 +378,7 @@ def main():
         new_population = selection(population)
         if len(new_population) == 0:  # 如果筛到最后没了，提前终止
             break;
+        best_chromosome = population[0]
         print("----------------------------------------")
         print("选择新一代个体")
         show_population(new_population)
@@ -364,10 +395,12 @@ def main():
         population = new_population
 
         # 输出最优解
-        # TODO: 注意这里每轮的最优解可能被去除（交叉变异没保存）
+        # TODO: 注意这里每轮的最优解可能被去除（交叉变异没保存） 需要采取精英保留策略
         best = min(population, key=lambda x: x.fitness)
         print(f'best path: {best}')
         print(f'best fitness: {best.fitness}')
+
+    return best_chromosome
 
 if __name__ == '__main__':
     main()

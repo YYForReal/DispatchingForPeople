@@ -31,7 +31,7 @@ class AffectedNode(Node):
         self.anxiety = 0 # 总焦虑度
         self.last_time_visit = 0 # 距离上次访问的时间
         # 推测 物资需求
-        self.need = population * 1
+        self.reset_need()
 
     # 定义该地人群的焦虑函数
     def cal_people_anxiety():
@@ -45,6 +45,9 @@ class AffectedNode(Node):
 
     def __str__(self):
         return "受灾点" + Node.__str__(self)
+
+    def reset_need(self):
+        self.need = self.population * 1
 
 # 定义补给点
 class SuppleNode(Node):
@@ -123,7 +126,7 @@ supply_node = [
 random_node_list = []
 random_node_supple_list = []
 any_supple = False
-# 随机生成的节点数据 26个
+# 随机生成的节点数据 26个 TODO: 如何随机 符合现实依据
 for i in range(ord('a'), ord('z') + 1):
     name = chr(i)
     x = round(random.uniform(0, 90),3)
@@ -170,7 +173,7 @@ if __name__ == '__main__':
 
     # 设置绘制的列表2
     show_nodes = random_node_supple_list
-    # 绘制 受灾点的散点图 数据 s 大小 c 颜色 marker 样式
+    # 绘制 补给点的散点图 数据 s 大小 c 颜色 marker 样式
     x = [d["x"] for d in show_nodes]
     y = [d["y"] for d in show_nodes]
     plt.scatter(x, y, s=28, c="g", marker="p")

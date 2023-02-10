@@ -101,8 +101,8 @@ class Robot:
         :param start: 起始点
         :param destination: 目的地
         :param distance: 当前路程
-        :param speed: 速度
-        :param carry: 携带物资量
+        :param speed: 速度: 约 1.2 m/s
+        :param carry: 携带物资量: 约 150kg
         """
         self.start = start
         self.destination = destination
