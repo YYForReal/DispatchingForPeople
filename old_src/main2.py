@@ -2,8 +2,8 @@ import random
 import numpy as np
 import copy
 
-from map import map_nodes,random_node_list,random_node_supple_list,Node,AffectedNode,SuppleNode
-from selection import selection,selection_roulette,selection_championships
+from map import map_nodes, random_node_list, random_node_supple_list, Node, AffectedNode, SuppleNode
+from selection import selection, selection_roulette, selection_championships
 
 # 使用随机生成的数据进行模拟
 map_nodes = copy.deepcopy(random_node_list)
@@ -14,11 +14,11 @@ print(f"受灾点个数：{affected_number}")
 for i in range(len(map_nodes)):
     node = map_nodes[i]
     if node["is_supple"] == True:
-        map_nodes[i] = SuppleNode(node["x"],node["y"],node["name"])
+        map_nodes[i] = SuppleNode(node["x"], node["y"], node["name"])
     else:
-        map_nodes[i] = AffectedNode(node["x"],node["y"],node["name"],node["population"],node["magnitude"])
+        map_nodes[i] = AffectedNode(node["x"], node["y"], node["name"], node["population"], node["magnitude"])
 
-map_nodes_backup = copy.deepcopy(map_nodes) # 作一个深拷贝，后续恢复
+map_nodes_backup = copy.deepcopy(map_nodes)  # 作一个深拷贝，后续恢复
 
 print(map_nodes_backup[0].need)
 print(map_nodes[0].need)
@@ -64,22 +64,21 @@ CROSSOVER_RATE = 0.8  # 交叉概率
 MUTATION_RATE = 0.3  # 变异概率
 MAX_TIME = 1000  # 设置最大迭代次数(如果方案数量筛选到只剩一个就提前结束了)
 ANXIETY_RATE = 1.1  # 焦虑幂指速率
-now_time = 0 # 当前时间
+now_time = 0  # 当前时间
 
-distance_matrix = [0] * len(map_nodes) # 图的邻接矩阵（各节点的路径代价）
+distance_matrix = [0] * len(map_nodes)  # 图的邻接矩阵（各节点的路径代价）
 # TODO: 设置一个距离受灾点最近的补给点映射
-least_distance_supple_node_index = [0] * affected_number # 存储 受灾点 距离最近的补给点下标
+least_distance_supple_node_index = [0] * affected_number  # 存储 受灾点 距离最近的补给点下标
 for i in range(len(distance_matrix)):
     distance_matrix[i] = [0] * len(map_nodes)
 
-
-anxiety_arr = [0] * len(map_nodes) # 各地点的人群累计焦虑值
+anxiety_arr = [0] * len(map_nodes)  # 各地点的人群累计焦虑值
 
 
 # 定义染色体结构
 class Chromosome:
     def __init__(self, path):
-        self.path = path # 路径： abc1 ef2 ght3
+        self.path = path  # 路径： abc1 ef2 ght3
         self.fitness = None
         print(f"Chromosome: {self.path}")
 
@@ -97,12 +96,11 @@ class Chromosome:
         cost_time = 0
         for i in range(len(self.path) - 1):
             # print(f"{str(self.path[i])}  -- {str(self.path[i+1])}")
-                anxiety += distance_matrix[int(self.path[i])][int(self.path[i + 1])]
+            anxiety += distance_matrix[int(self.path[i])][int(self.path[i + 1])]
         self.fitness = anxiety
 
     # 版本3：计算适应度
     def evaluate_fitness(self):
-
 
         robots = []
         start = None
@@ -114,7 +112,7 @@ class Chromosome:
             if type(self.path[i]) != int:
                 # 如果是字母的话就是机器人
                 # distance = distances[start][destination]
-                robot = Robot(tasks,speed=1,max_carry=150)
+                robot = Robot(tasks, speed=1, max_carry=150)
                 # robot = Robot(start, destination, distance, speed)
                 robots.append(robot)
                 tasks = list()
@@ -130,7 +128,7 @@ class Chromosome:
                 robot.move()
                 if robot.task_index >= len(robot.tasks):
                     robots.remove(robot)
-            total_time+=1
+            total_time += 1
 
         # total_time = sum(robot.elapsed_time for robot in robots)
         self.fitness = total_time
@@ -139,25 +137,26 @@ class Chromosome:
     def __str__(self):
         return "->".join([str(i) for i in self.path])
 
+
 # 定义运输机器
 class Robot:
-    def __init__(self, tasks, speed=1,max_carry=100,start = affected_number ):
+    def __init__(self, tasks, speed=1, max_carry=100, start=affected_number):
         """
         :param tasks: 目的地任务序列
         :param speed: 速度: 约 1.2 m/s
         :param max_carry: 最大携带物资量: 约 150kg
         :param start: 当前的机器人的出发点（也是初始的位置）
         """
-        self.tasks = tasks # 总共的任务队列
+        self.tasks = tasks  # 总共的任务队列
         self.max_carry = max_carry  # 最大携带容量
-        self.speed = speed # 运输机器的速度
+        self.speed = speed  # 运输机器的速度
 
-        self.start = start # 当前位处的节点下标（初始位置）
-        self.destination = tasks[0] # 标记目的地
-        self.distance = 0 # 这段路行驶路程
-        self.elapsed_distance = 0 # 已走总路程
-        self.carry = max_carry # 当前携带容量,由于初始位于补给点，所以默认是满的
-        self.task_index = 0 # 对应染色体的任务下标
+        self.start = start  # 当前位处的节点下标（初始位置）
+        self.destination = tasks[0]  # 标记目的地
+        self.distance = 0  # 这段路行驶路程
+        self.elapsed_distance = 0  # 已走总路程
+        self.carry = max_carry  # 当前携带容量,由于初始位于补给点，所以默认是满的
+        self.task_index = 0  # 对应染色体的任务下标
         self.x = map_nodes[start].x
         self.y = map_nodes[start].y
 
@@ -173,18 +172,15 @@ class Robot:
         self.distance += self.speed
         self.elapsed_distance += self.speed
 
-
         # print(f"robot move from {self.start} to {self.destination}")
         if self.distance >= distance_matrix[self.start][self.destination]:
             self.arrive()
         else:
-            percentage = self.distance/ distance_matrix[self.start][self.destination]
+            percentage = self.distance / distance_matrix[self.start][self.destination]
             target_x = map_nodes[self.destination].x
             target_y = map_nodes[self.destination].y
             self.x = map_nodes[self.start].x + percentage * (target_x - map_nodes[self.start].x)
             self.y = map_nodes[self.start].y + percentage * (target_y - map_nodes[self.start].y)
-
-
 
     def arrive(self):
         """
@@ -196,18 +192,18 @@ class Robot:
             补给点：  
         """
         print(f"Robot arrive from {map_nodes[self.start].name} to {map_nodes[self.destination].name}")
-        self.distance = 0 # 重置 下一段路已经行驶的路程
-        old_start  = self.start
-        self.start = self.destination # 更新 下一段路的起始点
+        self.distance = 0  # 重置 下一段路已经行驶的路程
+        old_start = self.start
+        self.start = self.destination  # 更新 下一段路的起始点
         self.x = map_nodes[self.start].x
         self.y = map_nodes[self.start].y
-        index = self.destination #
+        index = self.destination  #
         arrive_node = map_nodes[index]
         if arrive_node.is_supple:
             # 如果到达的是补给点
             # TODO： 比较补给量，这里先默认补给充裕,直接拉满
             self.carry = self.max_carry
-            self.destination = self.tasks[self.task_index] # 设置前往受灾点，继续进行物资补给
+            self.destination = self.tasks[self.task_index]  # 设置前往受灾点，继续进行物资补给
             pass
         else:
             print(f"carry:{self.carry} , need: {map_nodes[self.destination].need}")
@@ -228,7 +224,7 @@ class Robot:
                 print(f"物资充足:剩余：{self.carry}")
 
                 arrive_node.need = 0
-                self.task_index +=1
+                self.task_index += 1
                 if self.task_index >= len(self.tasks):
                     print("finish its tasks")
                 else:
@@ -261,8 +257,8 @@ def init_map():
 
     for i in range(affected_number):
         min_node_index = None
-        min_distance = 2**30
-        for j in range(affected_number,len(map_nodes)):
+        min_distance = 2 ** 30
+        for j in range(affected_number, len(map_nodes)):
             if distance_matrix[i][j] < min_distance:
                 min_node_index = j
                 min_distance = distance_matrix[i][j]
@@ -304,6 +300,8 @@ def crossover(chromosome1, chromosome2):
     new_chromosome2 = Chromosome(chromosome2.path[:cross_point] + chromosome1.path[cross_point:])
     return new_chromosome1, new_chromosome2
 
+
+# 初始化种群-染色体
 def init_population(n_chromosomes, n_cities):
     """
     种群初始化 (数字是地点、字母是机器人)
@@ -315,7 +313,8 @@ def init_population(n_chromosomes, n_cities):
     for i in range(n_chromosomes):
         path = list(range(n_cities))
         random.shuffle(path)
-        print("路径生成："+str(path))
+        print("路径生成：" + str(path))
+
         # TODO: 目前是单机器人的表示，多机器人要用多个字母截断
         # TODO: 调优方面可以在初始化上逼近均匀分配
         path.extend("a")
@@ -328,16 +327,16 @@ def crossover_and_mutate(population):
     new_population = []
     for i in range(0, len(population), 2):
         # 如果只剩最后一个，就不交叉变异了
-        if i+1 >= len(population):
+        if i + 1 >= len(population):
             new_population.append(population[i])
             break
 
         # 随机决定是否进行交叉
         if random.random() < CROSSOVER_RATE:
             # 进行交叉
-            offspring1, offspring2 = crossover(population[i], population[i+1])
+            offspring1, offspring2 = crossover(population[i], population[i + 1])
         else:
-            offspring1, offspring2 = population[i], population[i+1]
+            offspring1, offspring2 = population[i], population[i + 1]
         # 随机决定是否进行变异
         if random.random() < MUTATION_RATE:
             mutate(offspring1)
@@ -348,11 +347,13 @@ def crossover_and_mutate(population):
         new_population.append(offspring2)
     return new_population
 
+
 # 展示当前的种群染色体（方案）: 路径 + 适应度
 def show_population(population):
     for i in range(len(population)):
         chromosome = population[i]
         print(f"{str(chromosome)} : {str(chromosome.fitness)}")
+
 
 # 重置所有受灾点需求
 def resetAllNeed():
@@ -402,6 +403,6 @@ def main():
 
     return best_chromosome
 
+
 if __name__ == '__main__':
     main()
-

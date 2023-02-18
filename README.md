@@ -37,3 +37,32 @@
 
 所以可以排除补给点的编码，仅仅使用受灾点进行染色体编码。
 
+### 版本
+
+main仅仅实现了遗传的框架
+main2实现了机器人的拓展和表示
+main2-1更改染色体的初始化及表示
+
+### 项目配置文件说明
+
+/src/config.json：
+
+- `RANDOM_MODE`:随机模式。
+  - 1代表完全随机（仅限制地图节点个数）
+  - 2代表限制补给点和受灾点个数（TODO）
+  - 3代表限制机器人个数（TODO）
+  
+~~~json
+{
+  "RANDOM_MODE": 1, // 生成数据的方式
+  "NODE_NUMBER": 10, // 节点数量
+  "AFFECTED_NUMBER": 7, // 受灾点数量
+  "SUPPLE_NUMBER": 3, // 补给点数量
+  "ROBOT_NUMBER": 3, // 机器人数量
+  "CHROMOSOME_NUMBER": 20, // 染色体方案数
+  "CROSSOVER_RATE": 0.8, // 交叉概率
+  "MUTATION_RATE": 0.3, // 变异概率
+  "MAX_TIME": 1000, // 最大迭代次数（最长时间）
+  "ANXIETY_RATE": 1.1 // 焦虑幂指速率
+}
+~~~

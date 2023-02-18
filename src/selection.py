@@ -1,4 +1,4 @@
-
+import random
 """
     这里存放一些遗传算法中染色体选择的不同方法
 """
@@ -35,12 +35,11 @@ def selection_roulette(population):
     return new_population
 
 # 选择 - 锦标赛算法
-def selection_championships(chromosomes, tournament_size):
+def selection_championships(chromosomes, tournament_size = 3):
     new_chromosomes = []
     for i in range(len(chromosomes)):
-        # 随机选择参赛个体
         competitors = random.sample(chromosomes, tournament_size)
-        # 选择适应度最高的个体
-        competitors.sort(key=lambda x: x.fitness, reverse=True)
+        # 选择适应度最高（焦虑度最低）的个体
+        competitors.sort(key=lambda x: x.fitness, reverse=False)
         new_chromosomes.append(competitors[0])
     return new_chromosomes
