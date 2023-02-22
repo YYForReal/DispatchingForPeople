@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-02-22T03:14:24.557Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="txWdgocsmWlQCot6q2uN" version="20.8.20" type="github">
+<mxfile host="app.diagrams.net" modified="2023-02-22T03:14:44.267Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="2LN32GLVnzzqcLY3gdBQ" version="20.8.20" type="github">
   <diagram name="第 1 页" id="L-44clw5l3WzsGwCj_VI">
     <mxGraphModel dx="1050" dy="558" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -61,6 +61,9 @@
         </mxCell>
         <mxCell id="yn22zNhBBdNR8hUx_VJX-19" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
           <mxGeometry x="340" y="400" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="yn22zNhBBdNR8hUx_VJX-25" value="根据距离进行概率性选择下一个节点" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="50" y="135" width="220" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
