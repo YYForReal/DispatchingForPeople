@@ -1,0 +1,86 @@
+{
+    "map_nodes": [
+        {
+            "name": 1,
+            "x": 175.398,
+            "y": 175.486,
+            "magnitude": 4.46,
+            "population": 4.28,
+            "is_supple": false
+        },
+        {
+            "name": 2,
+            "x": 61.811,
+            "y": 139.119,
+            "magnitude": 4.57,
+            "population": 1.48,
+            "is_supple": false
+        },
+        {
+            "name": 3,
+            "x": 30.736,
+            "y": 108.678,
+            "magnitude": 3.03,
+            "population": 1.84,
+            "is_supple": false
+        },
+        {
+            "name": 4,
+            "x": 25.331,
+            "y": 97.83,
+            "magnitude": 4.29,
+            "population": 3.34,
+            "is_supple": false
+        },
+        {
+            "name": 6,
+            "x": 52.452,
+            "y": 97.384,
+            "magnitude": 2.49,
+            "population": 2.39,
+            "is_supple": false
+        },
+        {
+            "name": 7,
+            "x": 101.517,
+            "y": 161.677,
+            "magnitude": 1.84,
+            "population": 1.27,
+            "is_supple": false
+        },
+        {
+            "name": 8,
+            "x": 61.41,
+            "y": 164.905,
+            "magnitude": 3.88,
+            "population": 1.69,
+            "is_supple": false
+        },
+        {
+            "name": 9,
+            "x": 163.854,
+            "y": 133.255,
+            "magnitude": 5.95,
+            "population": 1113.61,
+            "is_supple": false
+        },
+        {
+            "name": 0,
+            "x": 152.788,
+            "y": 63.304,
+            "magnitude": 3.25,
+            "population": 1.42,
+            "is_supple": true
+        },
+        {
+            "name": 5,
+            "x": 87.084,
+            "y": 127.187,
+            "magnitude": 5.53,
+            "population": 13.58,
+            "is_supple": true
+        }
+    ],
+    "AFFECTED_NUMBER": 8,
+    "SUPPLE_NUMBER": 2
+}

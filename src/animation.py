@@ -5,7 +5,15 @@ import copy
 import main
 
 total_time = 0
+
+
 def update(frame,nodes,robots,scatter):
+    global total_time
+    total_time += 1
+    if total_time >= main.MAX_TIME :
+        print("超时")
+        return False
+
     for robot in robots:
         robot.move()
 
@@ -58,6 +66,7 @@ def show(nodes,robots):
 if __name__ == '__main__':
     # 引入数据
     chromosome = main.main()
+    print(str(chromosome))
     # print("Look")
     # print(chromosome.path)
     # print("node")
@@ -71,7 +80,7 @@ if __name__ == '__main__':
     tasks = list()
     # 构造机器人及其任务
     for i in range(len(chromosome.path)):
-        if type(chromosome.path[i]) != int:
+        if np.issubdtype(type(chromosome.path[i]), np.integer) == False:
             # 如果是字母的话就是机器人
             robot = main.Robot(tasks, speed=1, max_carry=120)
             robots.append(robot)
@@ -81,11 +90,14 @@ if __name__ == '__main__':
             tasks.append(chromosome.path[i])
 
     for node in main.map_nodes_backup[:main.AFFECTED_NUMBER]:
-        print("need:" + str(node.need))
+        print(f"{node.name} need: {str(node.need)}")
 
     print("robots tasks:")
     for robot in robots:
-        print(str(robot.tasks) ,end=" ")
-        print(robot.carry)
+        print("robot:",end=" ")
+        for index in robot.tasks:
+            print(map_nodes[index].name,end=" ")
+        # print(str( ) ,end=" ")
+        print("")
 
     show(map_nodes,robots)

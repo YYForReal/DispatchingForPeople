@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 import json
 import copy
-
+import os
 # import builtins
 #
 #
@@ -15,7 +15,7 @@ import copy
 # print("This is a test")
 # print("Another test")
 
-
+data_output_filename = "../data/data.json"
 
 
 # 读取配置文件
@@ -171,8 +171,8 @@ if RANDOM_MODE == 1:
         is_supple = True if random.random() < 0.2 else False
 
         # 如果到了最后一个还没有补给点，我们确保必定有一个补给点
-        #    if name == "z" and any_supple == False:
-        if i == ord('A') + NODE_NUMBER - 1 and any_supple == False:
+        # if i == ord('A') + NODE_NUMBER - 1 and any_supple == False:
+        if i == NODE_NUMBER - 1 and any_supple == False:
             is_supple = True
 
         new_node = {
@@ -194,6 +194,26 @@ if RANDOM_MODE == 1:
     map_nodes.extend(random_node_supple_list)
     AFFECTED_NUMBER = len(random_node_list)
     SUPPLE_NUMBER = len(random_node_supple_list)
+elif RANDOM_MODE == 2:
+    # 读取JSON文件数据
+    data = {}
+    with open(data_output_filename, "r") as f:
+        data = json.load(f)
+    map_nodes = data["map_nodes"]
+    AFFECTED_NUMBER = data["AFFECTED_NUMBER"]
+    SUPPLE_NUMBER = data["SUPPLE_NUMBER"]
+
+# 写入这次的数据
+print("写入数据...")
+# 检查目录是否存在，如果不存在则创建它
+if not os.path.exists(os.path.dirname(data_output_filename)):
+    try:
+        os.makedirs(os.path.dirname(data_output_filename))
+    except OSError as exc: # 防止多个线程同时创建目录
+        if exc.errno != errno.EEXIST:
+            raise
+with open(data_output_filename, "w") as f:
+    json.dump({"map_nodes":map_nodes,"AFFECTED_NUMBER":AFFECTED_NUMBER,"SUPPLE_NUMBER":SUPPLE_NUMBER}, f,indent=4)
 
 print(f"初始化受灾点个数：{AFFECTED_NUMBER}")
 print(f"初始化补给点个数：{SUPPLE_NUMBER}")
