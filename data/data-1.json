@@ -1,0 +1,86 @@
+{
+    "map_nodes": [
+        {
+            "name": 0,
+            "x": 11.128,
+            "y": 55.052,
+            "magnitude": 2.47,
+            "population": 4.42,
+            "is_supple": false
+        },
+        {
+            "name": 1,
+            "x": 63.734,
+            "y": 96.539,
+            "magnitude": 5.98,
+            "population": 3.27,
+            "is_supple": false
+        },
+        {
+            "name": 2,
+            "x": 146.551,
+            "y": 90.48,
+            "magnitude": 1.89,
+            "population": 1.66,
+            "is_supple": false
+        },
+        {
+            "name": 3,
+            "x": 66.751,
+            "y": 166.693,
+            "magnitude": 5.62,
+            "population": 3.47,
+            "is_supple": false
+        },
+        {
+            "name": 7,
+            "x": 161.664,
+            "y": 85.212,
+            "magnitude": 5.76,
+            "population": 2.54,
+            "is_supple": false
+        },
+        {
+            "name": 8,
+            "x": 165.146,
+            "y": 109.578,
+            "magnitude": 6.7,
+            "population": 0.25,
+            "is_supple": false
+        },
+        {
+            "name": 9,
+            "x": 55.301,
+            "y": 31.419,
+            "magnitude": 2.71,
+            "population": 3.98,
+            "is_supple": false
+        },
+        {
+            "name": 4,
+            "x": 85.627,
+            "y": 13.95,
+            "magnitude": 3.54,
+            "population": 1.73,
+            "is_supple": true
+        },
+        {
+            "name": 5,
+            "x": 34.815,
+            "y": 63.944,
+            "magnitude": 2.09,
+            "population": 0.62,
+            "is_supple": true
+        },
+        {
+            "name": 6,
+            "x": 30.516,
+            "y": 163.786,
+            "magnitude": 4.2,
+            "population": 0.72,
+            "is_supple": true
+        }
+    ],
+    "AFFECTED_NUMBER": 7,
+    "SUPPLE_NUMBER": 3
+}

@@ -71,17 +71,6 @@ map_nodes_backup = copy.deepcopy(map_nodes)  # 作一个深拷贝,用于后续�
 # 图节点
 n = len(map_nodes)
 distance_matrix = np.zeros((n, n))  # 图的邻接矩阵（各节点的路径代价）
-distance_matrix_copy = np.zeros((n,n)) # 图的初始邻接矩阵
-distance_matrix_initial = np.zeros((n,n)) # 初始可视化图上的距离
-
-
-
-# 佛洛依德思想 --> i->j节点的路径
-path = [[[j] if distance_matrix[i][j] != float('inf') else [] for j in range(NUM_NODES)] for i in range(NUM_NODES)]
-
-
-
-
 
 # least_distance_supple_node_index = [0] * AFFECTED_NUMBER  # 距离受灾点最近的补给点映射 ：补给点下标
 priority_supple_node_index = [[0] * SUPPLE_NUMBER for _ in range(AFFECTED_NUMBER)]  # 距离受灾点最近的补给点优先级 ：补给点下标
@@ -92,9 +81,7 @@ MAX_INF = 999999999
 # 当前仍有需求的节点下标列表
 now_need_node_index_list = list(range(AFFECTED_NUMBER))
 
-# 模拟调度时的状态
 state = {
-    # 所有补给点是否物资不足
     "isAllSuppleEnd": False
 }
 
@@ -173,8 +160,7 @@ class Chromosome:
             anxiety_arr[i] = 0
         global now_need_node_index_list
         now_need_node_index_list = list(range(AFFECTED_NUMBER))
-        global distance_matrix
-        distance_matrix = copy.deepcopy(distance_matrix_copy)
+
         # print("before path" + str(self.path))
 
         # 当前假设是机器人跑完所有的路程即结束，限定时间段
@@ -235,26 +221,16 @@ class Robot(Node):
         self.destination = tasks[0]  # 标记目的地
         self.distance = 0  # 这段路行驶路程
         self.elapsed_distance = 0  # 已走总路程
-
         self.carry = copy.deepcopy(max_carry)  # 当前携带容量,由于初始位于补给点，所以默认是满的
         self.task_index = 0  # 对应染色体的任务下标
         self.x = map_nodes[start].x
         self.y = map_nodes[start].y
-
-        self.is_backing = False # 是否处于撤回状态
-
-
 
     def move(self, stone_list):
         """
         模拟机器人移动
         :return:
         """
-        # 如果处于回撤状态
-        if self.is_backing:
-            self.back()
-            return True
-
         # 移动时如果出发点和目的地一样，就表示结束？
         # if self.start == self.destination:
         if self.task_index >= len(self.tasks):
@@ -293,57 +269,8 @@ class Robot(Node):
                 if stone.calculate_distance(self) <= stone.radius:
                     distance_matrix[self.start][self.destination] = MAX_INF
                     print(f"{self.start} 和 {self.destination}堵塞。。。")
-                    # 修改目标，返回
-                    self.is_backing = True
-                    input("发现石头，开始回撤")
+
         return True
-
-
-    # 机器人撤回时的行动
-    def back(self):
-        # 路程减少
-        self.distance -= self.speed
-        self.elapsed_distance -= self.speed
-
-        # 计算坐标
-        percentage = self.distance / distance_matrix_copy[self.start][self.destination]
-        target_x = map_nodes[self.destination].x
-        target_y = map_nodes[self.destination].y
-        self.x = map_nodes[self.start].x + percentage * (target_x - map_nodes[self.start].x)
-        self.y = map_nodes[self.start].y + percentage * (target_y - map_nodes[self.start].y)
-
-        # 如果回撤到起点
-        if self.distance <= 0:
-            self.is_backing = False
-            # TODO：检测是否可以绕路抵达（默认连通可达，若不连通，则可视为两个区域，需要分别应用该算法）
-            print(str(self.start)  + " --》 " +  str(self.destination))
-            print("当前任务不可达:" + str(self.task_index))
-            print(self.tasks)
-            input("回撤到起点")
-
-            # 优先路径依旧是直达，且本身不可达，即不连通
-            if len(path[self.task_index][self.destination]) == 1:
-                # print("不连通")
-                # 删除对应任务
-                del self.tasks[self.task_index]
-                # self.tasks.remove(self.task_index)
-                self.destination = self.start
-            else:
-                # 绕路抵达
-                # print("连通，非直达")
-                self.tasks[self.task_index:self.task_index] = path[self.task_index][self.destination][:-1]
-                # print(self.tasks)
-                # print(self.task_index)
-                self.destination = self.tasks[self.task_index]
-
-            # new_task_path = path[self.task_index][:-1]
-            # print(new_task_path)
-            # self.tasks.insert(self.task_index,new_task_path)
-            # print(self.tasks)
-            # input()
-
-
-
 
     def arrive(self):
         global now_need_node_index_list
@@ -366,9 +293,7 @@ class Robot(Node):
             # 如果到达的是补给点
             # TODO： 比较补给量，这里先默认补给充裕,
             arrive_node.supple(self)
-            des = self.tasks[self.task_index]
-            if map_nodes[des].is_supple and self.task_index < len(self.tasks) - 1 :
-                self.task_index +=1
+
             # self.carry = copy.deepcopy(self.max_carry)
             self.destination = self.tasks[self.task_index]  # 设置前往受灾点，继续进行物资补给
             pass
@@ -414,30 +339,8 @@ class Robot(Node):
                     ready_supple_node_index = priority_supple_node_index[self.start][i]
                     ready_supple_node = map_nodes[ready_supple_node_index]
                     if ready_supple_node.hasMaterial():
-                        # TODO: 使用迪杰斯特拉 | 弗洛伊德 || 规划一下路径 --------------------------------------------------------- ！！！！！！！！！！！！
-
-                        # print("原任务")
-                        # print(self.tasks)
-                        # print(self.task_index)
-                        # print(f"原本--> {ready_supple_node_index}")
-                        # print(f"从节点{self.start}到{ready_supple_node_index}:")
-                        # print(path[self.start][ready_supple_node_index])
-
-                        # task_index = 1
-                        # A = [4, 5, 6]
-                        # 直达
-                        if len(path[self.start][ready_supple_node_index]) == 1:
-                            self.destination = ready_supple_node_index
-                        else:
-                            self.tasks[self.task_index:self.task_index] = path[self.start][ready_supple_node_index]
-                            self.destination = self.tasks[self.task_index]
-
-                        # print("新任务")
-                        # print(self.tasks)
-                        # print(self.task_index)
-                        # print(self.destination)
+                        self.destination = ready_supple_node_index
                         # print(str(ready_supple_node) + " 物资充足")
-
                         break
                     else:
                         # print(str(ready_supple_node) + " 物资不足，切换到下一个优先补给点")
@@ -446,10 +349,9 @@ class Robot(Node):
                             print("所有物资已消耗完毕")
                 pass
 
+
 # 初始化 地图
 def init_map():
-    global distance_matrix_copy
-    global distance_matrix_initial
     # 初始化地图的邻接矩阵
     for i in range(len(map_nodes) - 1):
         for j in range(i + 1, len(map_nodes)):
@@ -457,9 +359,6 @@ def init_map():
             b = map_nodes[j]
 
             dis = a.calculate_distance(b)
-            distance_matrix_initial[i][j] = dis
-            distance_matrix_initial[j][i] = dis
-
             # 50%的概率随机堵塞两节点之间的路径
             if random.random() < 0.5:
                 dis = MAX_INF
@@ -471,20 +370,6 @@ def init_map():
         # distance_matrix.append(i_distance)
 
     print("初始化地图节点数据:邻接矩阵 完成")
-    distance_matrix_copy = copy.deepcopy(distance_matrix)
-
-    # 初始化每个节点到另外一个节点的最近路径
-    for k in range(NUM_NODES):
-        for i in range(NUM_NODES):
-            for j in range(NUM_NODES):
-                # 如果中间节点路径可达
-                if distance_matrix[i][k] != MAX_INF and distance_matrix[k][j] != MAX_INF:
-                    # 且距离更近
-                    if distance_matrix[i][j] > distance_matrix[i][k] + distance_matrix[k][j]:
-                        distance_matrix[i][j] = distance_matrix[i][k] + distance_matrix[k][j]
-                        path[i][j] = path[i][k] + path[k][j]
-
-    print("各节点之间的路径: " + str(path))
 
     global priority_supple_node_index
     global least_node_index
@@ -722,7 +607,6 @@ def resetAllNeed():
 def main():
     # 初始化地图数据，邻接矩阵 distance_matrix
     init_map()
-
     # test
     # showMap()
     # return 1
@@ -759,13 +643,6 @@ def main():
         # 输出最优解
         # TODO: 注意这里只保留最优解，但是并不保证把最优解放到种群里面
         best_chromosome = min(min(population, key=lambda x: x.fitness), best_chromosome, key=lambda x: x.fitness)
-        if best_chromosome not in population:
-            # 增加当前最优解到种群里面，同时移除最差的染色体
-            population.append(best_chromosome)
-            bad_chromosome = max(population,key=lambda  x:x.fitness)
-            population.remove(bad_chromosome)
-
-
         print(f'best path: {best_chromosome}')
         print(f'best fitness: {best_chromosome.fitness}')
 

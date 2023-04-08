@@ -4,7 +4,7 @@ import numpy as np
 import copy
 
 # import main
-import main as main
+import mainAutoTask as main
 
 import os
 from material import MaterialPackage
@@ -12,13 +12,12 @@ import json
 import itertools
 
 stone_list = main.stone_list
-distance_matrix = main.distance_matrix
-
 
 # 读取配置文件
 f = open('config.json', encoding="utf-8")
 config_dic = json.load(f)
 
+distance_matrix = main.distance_matrix
 
 # 地图上的全部节点数量（受灾点 + 补给点）
 ROBOT_A_CAPACITY = config_dic["ROBOT_A_CAPACITY"]
@@ -51,22 +50,10 @@ def update(frame, nodes, robots, scatter):
     y_robots = [robot.y for robot in robots]
 
     scatter.set_offsets(np.c_[x_nodes + x_robots, y_nodes + y_robots])
-
-    color_list = []
-    for node in main.map_nodes[:main.AFFECTED_NUMBER]:
-        # 如果仍有需求
-        if node.need.cal_anxiety_rate() > 0:
-            color_list.append("red")
-        else:
-            color_list.append("yellow")
-
-    scatter.set_color(color_list +
+    scatter.set_color(['red' for node in range(main.AFFECTED_NUMBER)] +
                       ['green' for node in range(main.SUPPLE_NUMBER)] +
                       ['blue' for robot in robots])
 
-    # scatter.set_color(['red' for node in range(main.AFFECTED_NUMBER)] +
-    #                   ['green' for node in range(main.SUPPLE_NUMBER)] +
-    #                   ['blue' for robot in robots])
 
 def show(nodes, robots):
     # 创建节点数据
@@ -88,6 +75,9 @@ def show(nodes, robots):
                 ax.plot([x[i], x[j]], [y[i], y[j]], linestyle='--', linewidth=0.5)
             else:
                 print(f"节点{i}与节点{j}距离为无穷远")
+
+
+
 
     # 绘制石头
     # 创建节点数据
@@ -135,8 +125,7 @@ if __name__ == '__main__':
     # print(chromosome.path)
     # print("node")
     # main2.map_nodes = copy.deepcopy(main2.map_nodes_backup)
-    # map_nodes = copy.deepcopy(main.map_nodes_backup)
-
+    map_nodes = copy.deepcopy(main.map_nodes_backup)
     map_nodes = main.map_nodes
     main.resetAllNeed()
     robots = []

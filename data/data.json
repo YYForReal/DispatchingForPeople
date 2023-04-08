@@ -1,86 +1,118 @@
 {
     "map_nodes": [
         {
+            "name": 0,
+            "x": 80.195,
+            "y": 134.979,
+            "magnitude": 2.55,
+            "population": 0.93,
+            "is_supple": false
+        },
+        {
             "name": 1,
-            "x": 175.398,
-            "y": 175.486,
-            "magnitude": 4.46,
-            "population": 4.28,
+            "x": 137.609,
+            "y": 51.32,
+            "magnitude": 6.76,
+            "population": 2.15,
             "is_supple": false
         },
         {
             "name": 2,
-            "x": 61.811,
-            "y": 139.119,
-            "magnitude": 4.57,
-            "population": 1.48,
+            "x": 120.867,
+            "y": 148.165,
+            "magnitude": 5.92,
+            "population": 2.2,
             "is_supple": false
         },
         {
             "name": 3,
-            "x": 30.736,
-            "y": 108.678,
-            "magnitude": 3.03,
-            "population": 1.84,
+            "x": 116.44,
+            "y": 107.96,
+            "magnitude": 3.2,
+            "population": 1.2,
             "is_supple": false
         },
         {
             "name": 4,
-            "x": 25.331,
-            "y": 97.83,
-            "magnitude": 4.29,
-            "population": 3.34,
+            "x": 38.29,
+            "y": 151.624,
+            "magnitude": 6.58,
+            "population": 3.83,
+            "is_supple": false
+        },
+        {
+            "name": 5,
+            "x": 165.757,
+            "y": 114.11,
+            "magnitude": 4.08,
+            "population": 2.21,
             "is_supple": false
         },
         {
             "name": 6,
-            "x": 52.452,
-            "y": 97.384,
-            "magnitude": 2.49,
-            "population": 2.39,
+            "x": 79.36,
+            "y": 79.798,
+            "magnitude": 3.59,
+            "population": 1.03,
             "is_supple": false
         },
         {
             "name": 7,
-            "x": 101.517,
-            "y": 161.677,
-            "magnitude": 1.84,
-            "population": 1.27,
+            "x": 129.092,
+            "y": 155.679,
+            "magnitude": 6.01,
+            "population": 4.62,
             "is_supple": false
         },
         {
             "name": 8,
-            "x": 61.41,
-            "y": 164.905,
-            "magnitude": 3.88,
-            "population": 1.69,
-            "is_supple": false
-        },
-        {
-            "name": 9,
-            "x": 163.854,
-            "y": 133.255,
-            "magnitude": 5.95,
-            "population": 1113.61,
-            "is_supple": false
-        },
-        {
-            "name": 0,
-            "x": 152.788,
-            "y": 63.304,
-            "magnitude": 3.25,
-            "population": 1.42,
+            "x": 4.454,
+            "y": 136.537,
+            "magnitude": 5.97,
+            "population": 4.66,
             "is_supple": true
         },
         {
-            "name": 5,
-            "x": 87.084,
-            "y": 127.187,
-            "magnitude": 5.53,
-            "population": 13.58,
+            "name": 9,
+            "x": 8.685,
+            "y": 52.452,
+            "magnitude": 5.76,
+            "population": 0.8,
             "is_supple": true
         }
     ],
     "AFFECTED_NUMBER": 8,
-    "SUPPLE_NUMBER": 2
+    "SUPPLE_NUMBER": 2,
+    "stone_list": [
+        {
+            "x": 155.8235890325212,
+            "y": 135.02411176083172,
+            "name": "stone_0",
+            "radius": 5
+        },
+        {
+            "x": 92.69197650984539,
+            "y": 38.35809608589795,
+            "name": "stone_1",
+            "radius": 3
+        },
+        {
+            "x": 140.26711771061574,
+            "y": 113.8800372615383,
+            "name": "stone_2",
+            "radius": 4
+        },
+        {
+            "x": 123.35279980353039,
+            "y": 118.9312644557567,
+            "name": "stone_3",
+            "radius": 1
+        },
+        {
+            "x": 38.07033797445782,
+            "y": 36.283940762949825,
+            "name": "stone_4",
+            "radius": 8
+        }
+    ]
 }
