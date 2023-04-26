@@ -50,8 +50,8 @@ SUPPLE_NUMBER = None
 class Node:
 
     def __init__(self, x, y, name=None):
-        self.x = round(x,3)  # 纬度
-        self.y = round(y,3)  # 经度
+        self.x = x  # 纬度
+        self.y = y  # 经度
         self.name = name  # 地名
         self.is_supple = False  # 是否是补给点
 
@@ -61,9 +61,7 @@ class Node:
         :param other_node:  其他节点
         :return: 返回与其他节点的距离
         """
-        distance = math.sqrt(pow(self.x - other_node.x, 2) + pow(self.y - other_node.y, 2))
-        distance = round(distance, 2)
-        return distance
+        return math.sqrt(pow(self.x - other_node.x, 2) + pow(self.y - other_node.y, 2))
 
     def __str__(self):
         return str(self.name) + "：(" + str(self.x) + "," + str(self.y) + ")"
@@ -119,7 +117,7 @@ class AffectedNode(Node):
 
 # 定义补给点
 class SuppleNode(Node):
-    def __init__(self, x, y, name=None, material_package=MaterialPackage(1000, 200, 100)):
+    def __init__(self, x, y, name=None, material_package=MaterialPackage(4000, 1000, 500)):
         Node.__init__(self, x, y, name)
         self.is_supple = True
         self.material_package = material_package
@@ -166,8 +164,8 @@ class Stone(Node):
         }
 
     def set_json(self, data):
-        self.x = round(data["x"],3)
-        self.y = round(data["y"],3)
+        self.x = data["x"]
+        self.y = data["y"]
         self.radius = data["radius"]
 
 
@@ -221,8 +219,8 @@ map_nodes = [
 
 stone_list = []
 for i in range(5):
-    x = round(np.random.uniform(0, 160), 3)
-    y = round(np.random.uniform(0, 160), 3)
+    x = random.uniform(0, 180)
+    y = random.uniform(0, 180)
     radius = random.randint(1, 10)
     stone = Stone(x, y, f"stone_{i}", radius)
     stone_list.append(stone)
@@ -252,8 +250,8 @@ if RANDOM_MODE == 1:
     # 随机生成的节点数据 NODE_NUMBER 个 TODO: 如何随机 符合现实依据
     # for i in range(ord('A'), ord('A') + NODE_NUMBER):
     for i in range(0, NODE_NUMBER):
-        x = round(np.random.uniform(0, 160), 3)
-        y = round(np.random.uniform(0, 160), 3)
+        x = round(np.random.uniform(0, 180), 3)
+        y = round(np.random.uniform(0, 180), 3)
         damage = round(np.random.uniform(1, 7), 2)  # 原本模拟的震级，这里需要再度抽象为损毁程度 ==> 已抽象为 损毁程度
         population = round(np.random.uniform(0.1, 5), 2)  # 假设以千人为单位，100 - 5000
         is_supple = True if random.random() < 0.2 else False
@@ -312,11 +310,11 @@ print(f"初始化补给点个数：{SUPPLE_NUMBER}")
 for i in range(len(map_nodes)):
     node = map_nodes[i]
     if node["is_supple"] == True:
-        map_nodes[i] = SuppleNode(node["x"], node["y"], node["name"],MaterialPackage(400, 100, 30))
-        print("supple node: " + str(map_nodes[i].material_package))
+        map_nodes[i] = SuppleNode(node["x"], node["y"], node["name"])
+        print("node1: " + str(map_nodes[i].material_package))
     else:
         map_nodes[i] = AffectedNode(node["x"], node["y"], node["name"], node["population"], node["damage"])
-        print("affected node: " + str(map_nodes[i].need))
+        print("node2: " + str(map_nodes[i].need))
 
 
 def showMap():

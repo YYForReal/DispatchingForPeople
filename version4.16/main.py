@@ -9,7 +9,7 @@ from material import MaterialPackage
 import heapq
 import os
 import time
-import math
+
 # 文件操作类
 import file_utils
 
@@ -66,7 +66,7 @@ CROSSOVER_RATE = config_dic["CROSSOVER_RATE"]  # 交叉概率
 MUTATION_RATE = config_dic["MUTATION_RATE"]  # 变异概率
 MAX_TIME = config_dic["MAX_TIME"]  # 设置每一个调度的最大时间限制
 MAX_GENERATION = config_dic["MAX_GENERATION"]  # 设置最大迭代次数(如果方案数量筛选到只剩一个就提前结束了)
-# ANXIETY_RATE = config_dic["ANXIETY_RATE"]  # 焦虑幂指速率
+ANXIETY_RATE = config_dic["ANXIETY_RATE"]  # 焦虑幂指速率
 
 ROBOT_A_CAPACITY = config_dic["ROBOT_A_CAPACITY"]
 ROBOT_B_CAPACITY = config_dic["ROBOT_B_CAPACITY"]
@@ -98,7 +98,7 @@ now_need_node_index_list = list(range(AFFECTED_NUMBER))
 # 模拟调度时的状态
 state = {
     # 所有补给点是否物资不足
-    "isAllSuppleEnd" : False
+    "isAllSuppleEnd": False
 }
 
 
@@ -121,7 +121,6 @@ class Chromosome:
     def __init__(self, path):
         self.path = path  # 路径： abc1 ef2 ght3
         self.fitness = None
-        self.dispatching_time = 0
         # print(f"Chromosome: {self.path}")
 
     # 版本1：计算适应度
@@ -194,21 +193,15 @@ class Chromosome:
                 #     running_robots.remove(robot)
             now_time += 1
 
-        # 调度完成，即更新对应的调度时间
-        self.dispatching_time = now_time
-
         for i in range(AFFECTED_NUMBER):
             anxiety_arr[i] += map_nodes[i].cal_people_anxiety(now_time)
 
-        if now_time == MAX_TIME:
-            # print("到达时间上限")
-            # 如果机器人仍有很多的路径没走完，删掉
-            for robot in running_robots:
-                robot.tasks = robot.tasks[:robot.task_index+1]
+        # if now_time == MAX_TIME:
+        # print("到达时间上限");
+
+        # TODO: 最后计算一次各个节点的焦虑度
 
 
-
-        # 反向更新
         self.path = []
         for i in range(len(robots)):
             robot = robots[i]
@@ -389,6 +382,9 @@ class Robot(Node):
     # 抵达目的地
     def arrive(self):
         global now_need_node_index_list
+
+
+
         """
         模拟机器人抵达目的地：重置行驶的这段路程，清算物资，判定是否需要行驶到补给点
         :return:
@@ -422,17 +418,16 @@ class Robot(Node):
             #     print(f"不是补给，是顺路吗？）-- {map_nodes[des].is_supple and self.task_index < len(self.tasks) - 1}")
             #     input(self.name + "抵达目的地 -- ")
 
-            # # 如果原先是为了补给才抵达的补给点
-            # if self.state["need_supply"]:
-            #     self.state["need_supply"] = False
-            #     # 已经没有需求了，就不需要再返回去了
-            #     if map_nodes[des].is_supple == False and map_nodes[des].need == 0 and self.task_index < len(self.tasks) - 1:
-            #         self.task_index += 1
-            # # 如果不是为了补给（那就是为了中转）
-            # elif map_nodes[des].is_supple and self.task_index < len(self.tasks) - 1:
-            #     self.task_index += 1
-            if self.task_index < len(self.tasks) - 1:
+            # 如果原先是为了补给才抵达的补给点
+            if self.state["need_supply"]:
+                self.state["need_supply"] = False
+                # 已经没有需求了，就不需要再返回去了
+                if map_nodes[des].is_supple == False and map_nodes[des].need == 0 and self.task_index < len(self.tasks) - 1:
+                    self.task_index += 1
+            # 如果不是为了补给（那就是为了中转）
+            elif map_nodes[des].is_supple and self.task_index < len(self.tasks) - 1:
                 self.task_index += 1
+
             # self.carry = copy.deepcopy(self.max_carry)
             self.destination = self.tasks[self.task_index]  # 设置前往受灾点，继续进行物资补给
 
@@ -458,12 +453,8 @@ class Robot(Node):
                     if len(now_need_node_index_list) > 0:
                         randomIndex = random.randint(0, len(now_need_node_index_list) - 1)
                         append_node = now_need_node_index_list[randomIndex]
-                        self.tasks.append(append_node)
-
-                        #
-                        # if append_node not in self.tasks:
-                        #     self.tasks.append(append_node)
-
+                        if append_node not in self.tasks:
+                            self.tasks.append(append_node)
                             # print("push a node : " + str(now_need_node_index_list[randomIndex]))
                     # print(self.tasks)
                     # print(self.task_index)
@@ -500,11 +491,7 @@ class Robot(Node):
                         if len(path[self.start][ready_supple_node_index]) == 1:
                             self.destination = ready_supple_node_index
                         else:
-                            # print(f"{self.start} to {ready_supple_node_index} not 直达")
-                            # print("before",str(self.tasks))
                             self.tasks[self.task_index:self.task_index] = path[self.start][ready_supple_node_index]
-                            # print("after", str(self.tasks))
-                            # input("--")
                             self.destination = self.tasks[self.task_index]
 
                         # print("新任务")
@@ -513,8 +500,9 @@ class Robot(Node):
                         # print(self.destination)
                         # print(str(ready_supple_node) + " 物资充足")
 
-                        # 设置机器人当前的状态为返程补给状态（如果没有设置，则表示直接经过该部分）
+                        # 设置机器人当前的状态为返程补给状态
                         self.state["need_supply"] = True
+
                         break
                     else:
                         # print(str(ready_supple_node) + " 物资不足，切换到下一个优先补给点")
@@ -540,7 +528,7 @@ def init_map():
     read_distance_matrix_initial = original_data.get("distance_matrix_initial")
 
     # 如果需要复用数据 且 具有复用的数据
-    if RANDOM_MODE == 2 and read_distance_matrix and read_distance_matrix_initial:
+    if USE_OLD_RESULT == True and RANDOM_MODE == 2 and read_distance_matrix and read_distance_matrix_initial:
         distance_matrix = np.array(read_distance_matrix)
         distance_matrix_initial = np.array(read_distance_matrix_initial)
         distance_matrix_copy = copy.deepcopy(distance_matrix)
@@ -629,17 +617,19 @@ def calculate_fitness(chromosomes):
         # 每次计算适应度前先恢复一下地图数据
         global map_nodes
         map_nodes = copy.deepcopy(map_nodes_backup)
+        # chromosome.calculate_fitness()
         chromosome.evaluate_fitness()
+        # print(f"{str(chromosome)} fitness: {str(chromosome.fitness)}")
 
 
 # 定义变异函数
 def mutate(chromosome):
-    # mutate_position(chromosome)
+    mutate_position(chromosome)
     mutate_kind(chromosome)
 
 
-# 单点本体交叉：交换本体的位置
-def cross_position(chromosome):
+# 第一种变异：交换本体的位置
+def mutate_position(chromosome):
     # 不交换机器人的位置,确保交换的是地点,但是若长时间没选择到，则变异失败
     loop = 0
     while loop < 100:
@@ -651,11 +641,12 @@ def cross_position(chromosome):
         loop += 1
 
 
-# 第二种变异，随机改变节点编号
+# 第二种变异，随机选择节点位置
 def mutate_kind(chromosome, range_number=AFFECTED_NUMBER):
     # 若长时间没选择到受灾节点，则变异失败
     loop = 0
     while loop < 100:
+        # 随机选择两个位置并交换其中的值
         i = random.sample(range(len(chromosome.path)), 1)[0]
         if type(chromosome.path[i]) == int:
             chromosome.path[i] = random.randint(0, range_number - 1)
@@ -780,27 +771,19 @@ def crossover_and_mutate(population):
         if i + 1 >= len(population):
             new_population.append(population[i])
             break
-
-        # 随机决定是否进行交叉（两点交叉）
+        # 随机决定是否进行交叉
         if random.random() < CROSSOVER_RATE:
             # 进行交叉
             offspring1, offspring2 = crossover(population[i], population[i + 1])
         else:
             offspring1, offspring2 = population[i], population[i + 1]
-
-        # 单点交叉
-        if random.random() < MUTATION_RATE:
-            cross_position(offspring1)
-        if random.random() < MUTATION_RATE:
-            cross_position(offspring2)
-
         # 随机决定是否进行变异
         if random.random() < MUTATION_RATE:
             mutate(offspring1)
         if random.random() < MUTATION_RATE:
             mutate(offspring2)
-
         new_population.append(offspring1)
+
         new_population.append(offspring2)
     return new_population
 
@@ -818,25 +801,6 @@ def reset_all_need():
         map_nodes[i].reset_need()
         # print(map_nodes[i].need)
 
-
-
-def init_all():
-    # 初始化地图数据，邻接矩阵 distance_matrix
-    init_map()
-
-    # 初始化种群
-    population = init_population(CHROMOSOME_NUMBER, AFFECTED_NUMBER)
-
-    # 如果有复用数据
-    if USE_OLD_RESULT == True and RANDOM_MODE == 2:
-        # 读取原本的json文件内容
-        original_data = file_utils.read_data()
-        # 混入上次的最佳染色体
-        best_chromosome = original_data.get("best_chromosome")
-        if best_chromosome is not None:
-            print("use old result:" + str(best_chromosome))
-            population.pop()
-            population.append(Chromosome(best_chromosome))
 
 # 定义主函数
 def main():
@@ -868,7 +832,7 @@ def main():
     print("开始遗传算法迭代")
     start_time = time.time()  # 记录程序开始时间
 
-    for i in range(MAX_GENERATION+1):
+    for i in range(MAX_GENERATION):
 
         # 选择新一代个体
         new_population = selection_championships(population)
@@ -891,37 +855,17 @@ def main():
         population = new_population
 
         # 输出最优解
-        new_best_chromosome = min(population,key=lambda x:x.fitness)
-        # print("new")
-        # print(new_best_chromosome.fitness)
-        # print("old")
-        # print(best_chromosome.fitness)
-        # print("after")
-        best_chromosome = min(best_chromosome, new_best_chromosome, key=lambda x: x.fitness)
-        # print(best_chromosome.fitness)
-        # input("1")
-
-
-
-        # best_chromosome = min(min(population, key=lambda x: x.fitness), best_chromosome, key=lambda x: x.fitness)
+        best_chromosome = min(min(population, key=lambda x: x.fitness), best_chromosome, key=lambda x: x.fitness)
         if best_chromosome not in population:
-            # 增加当前最优解到种群里面，同时移除次优的染色体（为了中期滚的）
-            bad_chromosome = min(population, key=lambda x: x.fitness)
-            population.remove(bad_chromosome)
+            # 增加当前最优解到种群里面，同时移除最差的染色体
             population.append(best_chromosome)
+            bad_chromosome = max(population, key=lambda x: x.fitness)
+            population.remove(bad_chromosome)
 
-
-        # 保留最优染色体
-        best_chromosome = copy.deepcopy(best_chromosome)
-
-
-        # if i % 10 == 0 or i <= 10:
-        #     print(f"{i}：{round(best_chromosome.fitness)}")
-            # print(f'best fitness: {best_chromosome.fitness}')
-        if i % (MAX_GENERATION / 5) == 0:
+        if i % (MAX_GENERATION / 10) == 0:
             print(f"第{i}次迭代")
+            print(f'best path: {best_chromosome}')
             print(f'best fitness: {best_chromosome.fitness}')
-            # print(f'best path: {best_chromosome} best fitness: {best_chromosome.fitness}')
 
 
     end_time = time.time()  # 记录程序开始时间
@@ -930,8 +874,15 @@ def main():
 
     file_utils.append_result(run_time,str(''.join(path_arr)),best_chromosome.fitness,str(best_chromosome))
     print("程序运行时间为：", run_time, "秒")
-    print(f'最佳染色体: {best_chromosome}  最佳适应度: {best_chromosome.fitness}')
-    # input("回车确认")
+    print(f'最佳染色体: {best_chromosome}')
+    print(f'最佳适应度: {best_chromosome.fitness}')
+    input("回车确认")
+
+    return best_chromosome
+
+
+if __name__ == '__main__':
+    best_chromosome = main()
 
     # 设置最佳染色体
     best_path = []
@@ -940,16 +891,6 @@ def main():
             best_path.append(x)
         else:
             best_path.append(int(x))
-
-    file_utils.set_property("best_chromosome", best_path)
+    file_utils.set_property("best_chromosome",best_path)
     file_utils.set_property("best_chromosome_fitness", best_chromosome.fitness)
 
-    return best_chromosome
-
-
-if __name__ == '__main__':
-    aver_fitness = 0
-    for i in range(5):
-        best_chromosome = main()
-        aver_fitness += best_chromosome.fitness
-    print("平均适应度："  + str(round(aver_fitness/5)))

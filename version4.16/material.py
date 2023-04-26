@@ -6,7 +6,7 @@ class Material:
         self.quantity = quantity
         self.anxiety_factor = anxiety_factor
 
-        # TODO 下一步的数量：如果有个机器人准备前往A受灾点，A受灾点的预估需求需要更新。否则在机器人还没到该点时，其他机器人会误以为它仍有需求（实际上过一段时间就没了）
+        # 下一步的数量：如果有个机器人准备前往A受灾点，A受灾点的预估需求需要更新。否则在机器人还没到该点时，其他机器人会误以为它仍有需求（实际上过一段时间就没了）
         self.next_quantity = quantity
 
     def __str__(self):
@@ -36,6 +36,8 @@ class Material:
         else:
             self.quantity += other
             return self
+
+
 
     def __lt__(self, other): #重载 self<record 运算符
         if isinstance(other, Material):
@@ -96,9 +98,6 @@ class MaterialPackage:
         self.B_material = self.B_material + other.B_material
         self.C_material = self.C_material + other.C_material
         return self
-
-    def __lt__(self, other):
-        return self.cal_anxiety_rate() < other.cal_anxiety_rate()
 
     def __str__(self):
         return "package:\n\t" + str(self.A_material)  + "\n\t"+ str(self.B_material) + "\n\t" + str(self.C_material)
