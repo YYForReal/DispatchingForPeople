@@ -1,7 +1,13 @@
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式后端避免 Tkinter 问题
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import copy
+
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei', 'Noto Sans CJK JP', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False
 
 # import main
 import main as main
@@ -98,7 +104,7 @@ def update(frame, nodes, robots, affected_scatter ,robot_scatter, ax):
 
 def show(nodes, robots):
     # 创建图形
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 8))
 
 
     # 绘制受灾点
@@ -133,19 +139,22 @@ def show(nodes, robots):
     ax.set_ylabel("y轴（单位：百米）")
     ax.set_xlim(0, 160)
     ax.set_ylim(0, 160)
-    # 设置绘制的参数
-    plt.rcParams["font.sans-serif"] = "SimHei"
-    plt.rcParams["axes.unicode_minus"] = False
+    # 字体设置已在文件开头配置
 
     # 标注节点的name
     for node in nodes:
         ax.text(node.x + 2, node.y + 2, node.name, ha='center', va='center', fontsize=10)
 
-    input("输入回车：开始绘制动画")
+    # 保存静态图像
+    plt.savefig('../data/disaster_map.png', dpi=300, bbox_inches='tight')
+    print("地图已保存到 ../data/disaster_map.png")
+
+    # 注释掉动画部分，避免显示问题
+    # input("输入回车：开始绘制动画")
     # 创建动画
-    ani = animation.FuncAnimation(fig, update, frames=100, repeat=True, fargs=(nodes, robots, affected_scatter,robot_scatter, ax), interval=20)
+    # ani = animation.FuncAnimation(fig, update, frames=100, repeat=True, fargs=(nodes, robots, affected_scatter,robot_scatter, ax), interval=20)
     # 显示动画
-    plt.show()
+    # plt.show()
 
 
 def draw_lines(nodes, ax):
